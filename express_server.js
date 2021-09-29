@@ -48,6 +48,13 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"],
+  };
+  res.render("urls_registration", templateVars);
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL, 
@@ -66,6 +73,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 
 });
+
 
 app.post("/urls", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
@@ -99,6 +107,7 @@ app.post("/logout", (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
