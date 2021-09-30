@@ -14,6 +14,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000,
 }));
 
+const { generateRandomString, userEmailExists, getUserByEmail } = require("./helpers");
 
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "randomId1"},
@@ -38,24 +39,6 @@ const users = {
   }
 };
 
-const userEmailExists = function(email) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return users[user].id;
-    }
-  } return false;
-};
-
-function generateRandomString() {
-  let randomString = "";
-   for (let i = 0; i < 6; i++) {
-     const randomCharCode = Math.floor(Math.random() * 26 + 97);
-     const randomChar = String.fromCharCode(randomCharCode);
-     randomString += randomChar;
-   }
-   return randomString;
- }
- 
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -149,10 +132,10 @@ app.post("/login", (req, res) => {
   const gotEmail = req.body.email;
   const gotPassword = req.body.password;
 
-  if (!userEmailExists(gotEmail)) {
+  if (!userEmailExists(gotEmail, users)) {
     res.status(403).send("There is no user with this email address");
   } else {
-    const userID = userEmailExists(gotEmail);
+    const userID = getUserByEmail(gotEmail, users);
     if (!bcrypt.compareSync(gotPassword, users[userID].password)) {
       res.status(403).send("Invalid Password!");
     } else {
@@ -175,7 +158,7 @@ app.post("/register", (req, res) => {
     res.status(400).send("Invalid email or password!");
   };
 
-  if (userEmailExists(gotEmail)) {
+  if (userEmailExists(gotEmail, users)) {
     res.status(400).send("Email is already registered!");
   };
 
