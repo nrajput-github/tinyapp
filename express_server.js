@@ -13,6 +13,16 @@ const urlDatabase = {
   "9sm5xK": { longURL: "http://www.google.com", userID: "randomId2"},
 };
 
+const urlsForUser = function(id) {
+  const userUrls = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userUrls[shortURL] = urlDatabase[shortURL];
+    }
+  } 
+  return userUrls;
+};
+
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -54,7 +64,7 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = { 
-    urls: urlDatabase, 
+    urls: urlsForUser(req.cookies["user_id"]), 
     user: users[req.cookies["user_id"]],
   };
   res.render("urls_index", templateVars);
@@ -90,6 +100,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL].longURL,
+    urlUserID: urlDatabase[req.params.shortURL].userID,
     user: users[req.cookies["user_id"]],
   };
   //res.render("urls_show", templateVars);
@@ -103,7 +114,7 @@ app.get("/u/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longURL,
   };*/
   //res.render("urls_show", templateVars);
-  const longURL = urlDatabase[req.params.shortURL];
+  let longURL = urlDatabase[req.params.shortURL];
   console.log(longURL);
   if (longURL === undefined) {
     res.send(400, `${req.params.shortURL} not found`);
@@ -126,19 +137,6 @@ app.post("/urls", (req, res) => {
 
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  //console.log(req.body);  // Log the POST request body to the console
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect(`/urls`);
-  //res.send("Ok");         // Respond with 'Ok' (we will replace this)
-
-});
-app.post("/urls/:id", (req, res) => {
-  const shortURL = req.params.id;
-  urlDatabase[shortURL] = req.body.newURL;
-  res.redirect('/urls');
-});
 
 app.post("/login", (req, res) => {
   const gotEmail = req.body.email;
@@ -184,6 +182,32 @@ app.post("/register", (req, res) => {
     //console.log(users);
     res.cookie('user_id', newUserID);
     res.redirect("/urls");
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  //console.log(req.body);  // Log the POST request body to the console
+  const userID = req.cookies["user_id"];
+  const userUrls = urlsForUser(userID);
+  if (Object.keys(userUrls).includes(req.params.shortURL)) {
+    const shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    res.redirect('/urls');
+  } else {
+    res.send(401);
+  }
+
+});
+
+app.post("/urls/:id", (req, res) => {
+  const userID = req.cookies["user_id"];
+  const userUrls = urlsForUser(userID);
+  if (Object.keys(userUrls).includes(req.params.id)) {
+    const shortURL = req.params.id;
+    urlDatabase[shortURL].longURL = req.body.newURL;
+    res.redirect('/urls');
+  } else {
+    res.send(401);
+  }
 });
 
 app.listen(PORT, () => {
