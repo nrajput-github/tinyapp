@@ -24,7 +24,7 @@ const users = {
 const userEmailExists = function(email) {
   for (const user in users) {
     if (users[user].email === email) {
-      return true
+      return users[user].id;
     }
   } return false;
 };
@@ -124,14 +124,26 @@ app.post("/urls/:id", (req, res) => {
   urlDatabase[shortURL] = req.body.newURL;
   res.redirect('/urls');
 });
+
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
-  res.redirect('/urls');
+  const gotEmail = req.body.email;
+  const gotPassword = req.body.password;
+
+  if (!userEmailExists(gotEmail)) {
+    res.send(403, "There is no user with this email address");
+  } else {
+    const userID = userEmailExists(gotEmail);
+    if (users[userID].password !== gotPassword) {
+      res.send(403, "Invalid Password!");
+    } else {
+      res.cookie('user_id', userID);
+      res.redirect("/urls");
+    }
+  }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
