@@ -21,6 +21,14 @@ const users = {
   }
 };
 
+const userEmailExists = function(email) {
+  for (const user in users) {
+    if (users[user].email === email) {
+      return true
+    }
+  } return false;
+};
+
 function generateRandomString() {
   let randomString = "";
    for (let i = 0; i < 6; i++) {
@@ -123,6 +131,14 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const gotEmail = req.body.email;
   const gotPassword = req.body.password;
+
+  if (!gotEmail || !gotPassword) {
+    res.send(400, "Invalid email or password!");
+  };
+
+  if (userEmailExists(gotEmail)) {
+    res.send(400, "Email is already registered!");
+  };
 
   const newUserID = generateRandomString();
   users[newUserID] = {
