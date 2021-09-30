@@ -12,6 +12,15 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  }
+};
+
 function generateRandomString() {
   let randomString = "";
    for (let i = 0; i < 6; i++) {
@@ -30,6 +39,7 @@ app.get("/", (req, res) => {
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
@@ -37,21 +47,23 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase, 
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_index", templateVars);
 });
+
 app.get("/urls/new", (req, res) => {
   const templateVars = { 
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
+
   res.render("urls_registration", templateVars);
 });
 
@@ -59,10 +71,10 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"],
+    user: users[req.cookies["user_id"]],
   };
   //res.render("urls_show", templateVars);
-  const longURL = urlDatabase[req.params.shortURL];
+ // const longURL = urlDatabase[req.params.shortURL];
   res.render("urls_show", templateVars);
 });
 app.get("/u/:shortURL", (req, res) => {
@@ -108,6 +120,29 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
+app.post("/register", (req, res) => {
+  const gotEmail = req.body.email;
+  const gotPassword = req.body.password;
+/*
+  if (!gotEmail || !gotPassword) {
+    res.send(400, "Please include both a valid email and password");
+  };
+
+  if (userAlreadyExists(gotEmail)) {
+    res.send(400, "An account already exists for this email address");
+  };*/
+
+  const newUserID = generateRandomString();
+  users[newUserID] = {
+    id: newUserID,
+    email: gotEmail,
+    password: gotPassword
+  };
+   // console.log(users[newUserID] );
+    //console.log(users);
+    res.cookie('user_id', newUserID);
+    res.redirect("/urls");
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
