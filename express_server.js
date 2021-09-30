@@ -123,14 +123,7 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const gotEmail = req.body.email;
   const gotPassword = req.body.password;
-/*
-  if (!gotEmail || !gotPassword) {
-    res.send(400, "Please include both a valid email and password");
-  };
 
-  if (userAlreadyExists(gotEmail)) {
-    res.send(400, "An account already exists for this email address");
-  };*/
 
   const newUserID = generateRandomString();
   users[newUserID] = {
