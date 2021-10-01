@@ -40,9 +40,12 @@ const users = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
-
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -80,13 +83,19 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  //if (req.session.user_id) {
+    //res.redirect("/urls");
+  
+//} else {
   let templateVars = {
     user: users[req.session.user_id],
   };
   res.render("urls_login", templateVars);
+//}
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
   const templateVars = { 
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL].longURL,
@@ -96,7 +105,11 @@ app.get("/urls/:shortURL", (req, res) => {
   //res.render("urls_show", templateVars);
  // const longURL = urlDatabase[req.params.shortURL];
   res.render("urls_show", templateVars);
+} else {
+  res.status(404).send("Invalid short URL");
+}
 });
+
 app.get("/u/:shortURL", (req, res) => {
 /*
   const templateVars = { 
@@ -107,7 +120,7 @@ app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   console.log(longURL);
   if (longURL === undefined) {
-    res.status(400).send(`${req.params.shortURL} not found`);
+    res.status(400).send(`ShortURL ${req.params.shortURL} not found`);
   } else {
     longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
@@ -117,14 +130,17 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
+  if (req.session.user_id) {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: req.session.user_id,
   };
-  res.redirect(`/u/${shortURL}`);
+  res.redirect(`/urls/${shortURL}`);
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
-
+  } else {
+    res.status(401).send("Please logged in");
+  }
 });
 
 
@@ -144,6 +160,7 @@ app.post("/login", (req, res) => {
     }
   }
 });
+
 
 app.post("/logout", (req, res) => {
   req.session = null;
