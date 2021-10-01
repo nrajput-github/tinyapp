@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser");
 //const cookieParser = require('cookie-parser');
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 app.use(bodyParser.urlencoded({extended: true}));
 //app.use(cookieParser());
 app.use(cookieSession({
@@ -27,7 +27,7 @@ const urlsForUser = function(id) {
     if (urlDatabase[shortURL].userID === id) {
       userUrls[shortURL] = urlDatabase[shortURL];
     }
-  } 
+  }
   return userUrls;
 };
 
@@ -40,7 +40,7 @@ const users = {
 };
 
 app.get("/", (req, res) => {
-  if (req.session.user_id) {
+  if ((users[req.session.user_id] !== undefined)  && (req.session.user_id === users[req.session.user_id].id)) {
     res.redirect("/urls");
   } else {
     res.redirect("/login");
@@ -56,15 +56,15 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { 
-    urls: urlsForUser(req.session.user_id), 
+  const templateVars = {
+    urls: urlsForUser(req.session.user_id),
     user: users[req.session.user_id],
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     user: users[req.session.user_id],
   };
   if (!req.session.user_id) {
@@ -75,29 +75,38 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if ((users[req.session.user_id] !== undefined)  && (req.session.user_id === users[req.session.user_id].id)) {
+   // console.log(`reg if ${req.session.user_id}`);
+    res.redirect("/urls");
+  } else {  
+    //console.log(`reg else ${req.session.user_id}`);
   let templateVars = {
     user: users[req.session.user_id],
   };
-
-  res.render("urls_registration", templateVars);
+ res.render("urls_registration", templateVars);
+}
 });
 
 app.get("/login", (req, res) => {
-  //if (req.session.user_id) {
-    //res.redirect("/urls");
   
-//} else {
+  if ((users[req.session.user_id] !== undefined)  && (req.session.user_id === users[req.session.user_id].id)) {
+  res.redirect("/urls");
+  //console.log(`log if ${req.session.user_id}`);
+
+ } else {
+  //console.log(`log else ${req.session.user_id}`);
   let templateVars = {
     user: users[req.session.user_id],
   };
   res.render("urls_login", templateVars);
-//}
+}
 });
+
 
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-  const templateVars = { 
-    shortURL: req.params.shortURL, 
+    const templateVars = {
+      shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
     urlUserID: urlDatabase[req.params.shortURL].userID,
     user: users[req.session.user_id],
