@@ -17,9 +17,9 @@
           </div>
         <% } else if (user.id !== urlUserID) { %>
           <div class="alert alert-warning" role="alert">
-              This link is not in your personal inventory.
+              This shortURL is not in your URL list.
           </div>
-        <% } %>       
+        <% } else { %>       
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       </div>
@@ -31,6 +31,8 @@
       <button type="submit" class="btn btn-primary" >Submit</button>
     </form>
     </div>
+   <% }%>
+   
   </div>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

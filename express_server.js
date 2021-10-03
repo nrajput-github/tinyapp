@@ -104,18 +104,20 @@ app.get("/login", (req, res) => {
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    const templateVars = {
-      shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL].longURL,
-      urlUserID: urlDatabase[req.params.shortURL].userID,
-      user: users[req.session.user_id],
-    };
-    //res.render("urls_show", templateVars);
-    // const longURL = urlDatabase[req.params.shortURL];
-    res.render("urls_show", templateVars);
+  if ((users[req.session.user_id] !== undefined)  && (req.session.user_id === users[req.session.user_id].id)) {
+    if (urlDatabase[req.params.shortURL]) {
+      const templateVars = {
+        shortURL: req.params.shortURL,
+        longURL: urlDatabase[req.params.shortURL].longURL,
+        urlUserID: urlDatabase[req.params.shortURL].userID,
+        user: users[req.session.user_id],
+      };
+      res.render("urls_show", templateVars);
+    } else {
+      res.status(404).send("Invalid short URL");
+    }
   } else {
-    res.status(404).send("Invalid short URL");
+     res.redirect("/urls");
   }
 });
 
